@@ -1,10 +1,6 @@
 from django.contrib.contenttypes.models import ContentType
 
-from dynflows.models import StateObjectRelation
-from dynflows.models import Transition
-from dynflows.models import Workflow
-from dynflows.models import WorkflowModelRelation
-from dynflows.models import WorkflowObjectRelation
+from dynflows.models import StateObjectRelation,Transition, Workflow, WorkflowModelRelation, WorkflowObjectRelation 
 
 
 def get_objects_for_workflow(workflow):
@@ -280,7 +276,8 @@ def set_initial_state(obj):
         set_state(obj, wf.get_initial_state())
 
 def get_allowed_transitions(obj, user):
-    """Returns all allowed transitions for passed object and user. Takes the
+    """
+    Returns all allowed transitions for passed object and user. Takes the
     current state of the object into account.
 
     **Parameters:**

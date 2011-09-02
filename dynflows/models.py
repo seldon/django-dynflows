@@ -57,7 +57,8 @@ class Workflow(models.Model):
         (via the object's content type) or locally (via the object itself).        
         """
         
-        import workflows.utils
+        from dynflows import utils
+        
         objs = []
 
         # Get all objects whose content type has this workflow
@@ -66,7 +67,7 @@ class Workflow(models.Model):
             # We have also to check whether the global workflow is not
             # overwritten.
             for obj in ctype.model_class().objects.all():
-                if workflows.utils.get_workflow(obj) == self:
+                if utils.get_workflow(obj) == self:
                     objs.append(obj)
 
         # Get all objects whose local workflow this workflow
@@ -130,19 +131,19 @@ class Workflow(models.Model):
             The object which gets the workflow.            
         """
         
-        import workflows.utils
-
+        from dynflows import utils
+        
         ctype = ContentType.objects.get_for_model(obj)
         try:
             wor = WorkflowObjectRelation.objects.get(content_type=ctype, content_id=obj.id)
         except WorkflowObjectRelation.DoesNotExist:
             WorkflowObjectRelation.objects.create(content = obj, workflow=self)
-            workflows.utils.set_state(obj, self.initial_state)
+            utils.set_state(obj, self.initial_state)
         else:
             if wor.workflow != self:
                 wor.workflow = self
                 wor.save()
-                workflows.utils.set_state(self.initial_state)
+                utils.set_state(self.initial_state)
 
 
 class State(models.Model):
@@ -178,7 +179,7 @@ class State(models.Model):
         for transition in self.transitions.all():
             permission = transition.permission
             if permission is None:
-               transitions.append(transition)
+                transitions.append(transition)
             else:
                 # First we try to get the objects specific has_permission
                 # method (in case the object inherits from the PermissionBase

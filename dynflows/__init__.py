@@ -1,4 +1,4 @@
-import dynflows.utils
+from dynflows import utils 
 
 class WorkflowBase(object):
     """Mixin class to make objects workflow-aware. """
@@ -9,7 +9,7 @@ class WorkflowBase(object):
         Returns the current workflow of the object.
         """
         
-        return dynflows.utils.get_workflow(self)
+        return utils.get_workflow(self)
 
     # FIXME: use a property instead !
     def remove_workflow(self):
@@ -19,7 +19,7 @@ class WorkflowBase(object):
         its content type).
         """
         
-        return dynflows.utils.remove_workflow_from_object(self)
+        return utils.remove_workflow_from_object(self)
     
     # FIXME: use a property instead !
     def set_workflow(self, workflow):
@@ -40,7 +40,7 @@ class WorkflowBase(object):
             The object which gets the passed workflow.
         """
         
-        return dynflows.utils.set_workflow_for_object(self, workflow)
+        return utils.set_workflow_for_object(self, workflow)
 
     # FIXME: use a property instead !
     def get_state(self):
@@ -48,7 +48,7 @@ class WorkflowBase(object):
         Returns the current workflow state of the object. 
         """
                 
-        return dynflows.utils.get_state(self)
+        return utils.get_state(self)
 
     # FIXME: use a property instead !
     def set_state(self, state):
@@ -56,7 +56,7 @@ class WorkflowBase(object):
         Sets the workflow state of the object.
         """
         
-        return dynflows.utils.set_state(self, state)
+        return utils.set_state(self, state)
     
     # FIXME: use a property instead !
     def set_initial_state(self):
@@ -70,7 +70,7 @@ class WorkflowBase(object):
         """
         Returns allowed transitions for the current state.
         """
-        return dynflows.utils.get_allowed_transitions(self, user)
+        return utils.get_allowed_transitions(self, user)
     
     
     def do_transition(self, transition, user):
@@ -78,4 +78,4 @@ class WorkflowBase(object):
         Processes the passed transition (if allowed).
         """
         
-        return dynflows.utils.do_transition(self, transition, user)
+        return utils.do_transition(self, transition, user)
