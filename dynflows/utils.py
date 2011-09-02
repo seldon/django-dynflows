@@ -277,16 +277,13 @@ def set_initial_state(obj):
 
 def get_allowed_transitions(obj, user):
     """
-    Returns all allowed transitions for passed object and user. Takes the
-    current state of the object into account.
-
-    **Parameters:**
-
-    obj
-        The object for which the transitions should be returned.
-
-    user
-        The user for which the transitions are allowed.
+    Given an object ``obj``, returns the list of all the transitions 
+    the user ``user`` is allowed to trigger, taking into account  
+    the current state of the object.   
+    
+    By definition, the return value of this method is a (possibly empty) subset
+    of the set of available transitions from the object's current state 
+    to any other state, as defined by the workflow associated with the object itself.  
     """
     
     state = get_state(obj)

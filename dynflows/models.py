@@ -173,24 +173,42 @@ class State(models.Model):
         return "%s (%s)" % (self.name, self.workflow.name)
 
     def get_allowed_transitions(self, obj, user):
-        """Returns all allowed transitions for passed object and user. """
+        """
+        Given an object ``obj``, returns the list of all the transitions
+        from this state the user ``user`` is allowed to trigger.   
         
-        transitions = []
+        By definition, the return value of this method is a (possibly empty) subset
+        of the set of available transitions from this state to any other state, 
+        as defined by the workflow associated with the object itself.
+        
+        Permission checks are delegated to specific model instances: to define 
+        a policy for a given transition, implement a method named ``transition.permission_name``
+        within the model class of the instance.  If a suitable method is not found,
+        the access control check is considered successful.        
+        """
+        #FIXME: what happens if ``self`` is not a state belonging to the ``obj``'s workflow ?
+        allowed_transitions = []
         for transition in self.transitions.all():
-            permission = transition.permission
-            if permission is None:
-                transitions.append(transition)
-            else:
-                # First we try to get the objects specific has_permission
-                # method (in case the object inherits from the PermissionBase
-                # class).
+            if transition.perm_name:
                 try:
-                    if obj.has_permission(user, permission.codename):
-                        transitions.append(transition)
-                except AttributeError:
-                    if permissions.utils.has_permission(obj, user, permission.codename):
-                        transitions.append(transition)
-        return transitions
+                    # retrieve the method (on the ``obj`` model class) defining 
+                    # the access control policy for this transition  
+                    perm_checker = getattr(obj, transition.perm_name)
+                    # ``perm_checker`` should be a bound instance method of ``obj``
+                    if not perm_checker(user):
+                        continue
+                except NameError:
+                    # the model class of which ``obj`` is an instance doesn't define
+                    # a checker for this permission, so we assume that everybody 
+                    # is allowed to trigger it
+                    pass
+        
+                # if the transition hasn't a permission associated with it,  
+                # everybody is allowed to trigger it        
+                allowed_transitions.append(transition) 
+                
+        return allowed_transitions                 
+
 
 class Transition(models.Model):
     """
@@ -214,13 +232,14 @@ class Transition(models.Model):
         The condition when the transition is available. Can be any python
         expression.
     """
-
-    # TODO: add a ``codename`` field (a slug-like field used to reference the transition 
-    # for access control purposes  
+ 
     name = models.CharField(_(u"Name"), max_length=100)
     workflow = models.ForeignKey(Workflow, verbose_name=_(u"Workflow"), related_name="transitions")
     destination = models.ForeignKey(State, verbose_name=_(u"Destination"), null=True, blank=True, related_name="destination_state")
     condition = models.CharField(_(u"Condition"), blank=True, max_length=100)
+    # FIXME: add a sanity check: field's value should be a valid Python identifier
+    # perhaps a custom field with a suitable validator could do the trick
+    perm_name = models.CharField(_(u"Permission name"), blank=True, max_length=100, help_text=_('The name of the permission required to trigger this transition; must be a valid Python identifier.'))
 
     def __unicode__(self):
         return self.name
